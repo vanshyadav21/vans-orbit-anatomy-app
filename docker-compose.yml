@@ -1,0 +1,44 @@
+version: "3.8" 
+
+services:
+  orbmysql:
+    container_name: orbmysql
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_DATABASE: "orbit"
+    ports:
+      - "3000:3306"
+    networks:
+      - orbit
+    volumes:
+      - ./orbit-vol:/var/lib/mysql
+    healthcheck:
+      test: ["CMD","nysqladmin","ping","-h","localhost","-uroot","-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+    restart: always
+
+  orbit-app:
+    container_name: vansh-orbit
+    image: vanshyadavdevops/vans-app:latest
+    ports:
+      - "8080:80"
+    networks:
+      - orbit
+    depends_on:
+      - orbmysql
+    environment:
+      MYSQL_HOST: "mysql"
+      MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_DATABASE: "orbit"
+
+    restart: always
+
+volumes:
+  orbit-vol:
+networks:
+  orbit:
